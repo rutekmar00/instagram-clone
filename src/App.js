@@ -1,7 +1,18 @@
 import "./styles.css";
+import React from "react";
+import { SignInPage } from "./pages";
+import { Router, Switch, Route } from "react-router-dom";
 
 function App() {
-  return <div className="App">Application-clone content</div>;
+  return (
+    <Router>
+      <Switch>
+        <Route exact path="/">
+          <SignInPage />
+        </Route>
+      </Switch>
+    </Router>
+  );
 }
 
 export default App;
