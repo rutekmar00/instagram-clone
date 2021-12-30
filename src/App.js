@@ -1,6 +1,6 @@
 import "./styles.css";
 import React from "react";
-import { SignInPage } from "./pages";
+import { SignInPage, SignUpPage } from "./pages";
 import { Router, Switch, Route } from "react-router-dom";
 
 function App() {
@@ -9,6 +9,9 @@ function App() {
       <Switch>
         <Route exact path="/">
           <SignInPage />
+        </Route>
+        <Route exact path="/signup">
+          <SignUpPage />
         </Route>
       </Switch>
     </Router>
