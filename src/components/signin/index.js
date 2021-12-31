@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import {
   Image,
   Title,
@@ -16,6 +16,9 @@ import {
   RegistrationHolder,
 } from "./styles/signin";
 
+import { firebase } from "../../lib/firebase";
+import { getUserById } from "../../services/firebase";
+
 const SignInSchema = Yup.object().shape({
   password: Yup.string()
     .min(8, "Password has at least 8 characters!")
@@ -25,6 +28,29 @@ const SignInSchema = Yup.object().shape({
 
 export default function SignIn() {
   const [error, setError] = useState("");
+  const history = useHistory();
+
+  useEffect(() => {
+    function getUser() {
+      firebase.auth().onAuthStateChanged(async (user) => {
+        if (user != null) {
+          const userId = user.uid;
+          if (userId != null) {
+            try {
+              const user = await getUserById(userId);
+              if (user[0] !== undefined) {
+                history.push("/main");
+                console.log(user[0]);
+              }
+            } catch (error) {
+              console.error(error);
+            }
+          }
+        }
+      });
+    }
+    getUser();
+  }, []);
 
   return (
     <>
@@ -35,10 +61,19 @@ export default function SignIn() {
             email: "",
           }}
           validationSchema={SignInSchema}
-          onSubmit={(values, { resetForm }) => {
+          onSubmit={async (values, { resetForm }) => {
             try {
-              console.log(values);
-              console.log("Sign In successful!");
+              await firebase
+                .auth()
+                .signInWithEmailAndPassword(values.email, values.password)
+                .then(async (userCredential) => {
+                  let user = userCredential.user;
+                  const userFirestore = await getUserById(user.uid);
+                  if (userFirestore != null) {
+                    console.log(userFirestore);
+                  }
+                });
+              history.push("/main");
             } catch (error) {
               let errorMessage = error.message;
               setError(errorMessage);

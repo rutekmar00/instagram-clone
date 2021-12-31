@@ -1,7 +1,7 @@
 import React from "react";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import {
   SignUpFormHolder,
   SubTitle,
@@ -17,6 +17,7 @@ import {
   Title,
   Error,
 } from "../signin/styles/signin";
+import { firebase } from "../../lib/firebase";
 
 const SignUpSchema = Yup.object().shape({
   fullName: Yup.string()
@@ -38,6 +39,8 @@ const SignUpSchema = Yup.object().shape({
 });
 
 export default function SignUp() {
+  const history = useHistory();
+
   return (
     <>
       <SignUpFormHolder>
@@ -51,12 +54,29 @@ export default function SignUp() {
           validationSchema={SignUpSchema}
           onSubmit={async (values, { setSubmitting, resetForm }) => {
             try {
-              console.log(values);
-              console.log("Registration successful!");
+              const createdUserResult = await firebase
+                .auth()
+                .createUserWithEmailAndPassword(values.email, values.password);
+
+              await createdUserResult.user.updateProfile({
+                displayName: values.userName,
+              });
+
+              await firebase.firestore().collection("users").add({
+                userId: createdUserResult.user.uid,
+                userIcon: process.env.USER_DEFAULT_ICON,
+                userName: values.userName,
+                fullName: values.fullName,
+                email: values.email,
+                followers: [],
+                following: [],
+                dateCreated: Date.now(),
+              });
             } catch (error) {
               resetForm();
               console.log(error);
             }
+            history.push("/");
             setSubmitting(false);
             resetForm();
           }}

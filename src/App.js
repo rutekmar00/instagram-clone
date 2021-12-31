@@ -2,10 +2,11 @@ import "./styles.css";
 import React from "react";
 import { SignInPage, SignUpPage } from "./pages";
 import { Router, Switch, Route } from "react-router-dom";
+import { history } from "./helpers/history";
 
 function App() {
   return (
-    <Router>
+    <Router history={history}>
       <Switch>
         <Route exact path="/">
           <SignInPage />
