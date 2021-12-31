@@ -15,8 +15,12 @@ import {
 } from "../navbar/styles/navbar";
 
 import { firebase } from "../../lib/firebase";
+import { useDispatch, useSelector } from "react-redux";
+import { setUserLogOut } from "../../slices/user";
+import { setUserInformationLogOut } from "../../slices/userInformation";
 
 export default function Navbar() {
+  const userIcon = useSelector((state) => state.user.userIcon);
   return (
     <>
       <Holder>
@@ -42,9 +46,7 @@ export default function Navbar() {
               </NavigationLink>
               <NavigationLink to={`/profile/`}>
                 <NavigationIconSpan>
-                  <NavigationIconImage
-                    src={process.env.USER_DEFAULT_ICON}
-                  ></NavigationIconImage>
+                  <NavigationIconImage src={userIcon}></NavigationIconImage>
                 </NavigationIconSpan>
               </NavigationLink>
               <NavigationLink className="last-element" to="/">
@@ -59,7 +61,11 @@ export default function Navbar() {
 }
 
 function NavigationSignOut() {
+  const dispatch = useDispatch();
+
   function handleSingOut() {
+    dispatch(setUserLogOut());
+    dispatch(setUserInformationLogOut());
     firebase.auth().signOut();
   }
 

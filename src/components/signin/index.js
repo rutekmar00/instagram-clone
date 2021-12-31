@@ -18,6 +18,13 @@ import {
 
 import { firebase } from "../../lib/firebase";
 import { getUserById } from "../../services/firebase";
+import { useDispatch } from "react-redux";
+import {
+  setActiveUser,
+  setActiveUserIcon,
+  setUserFullName,
+} from "../../slices/user";
+import { setUserFollowing } from "../../slices/userInformation";
 
 const SignInSchema = Yup.object().shape({
   password: Yup.string()
@@ -29,18 +36,41 @@ const SignInSchema = Yup.object().shape({
 export default function SignIn() {
   const [error, setError] = useState("");
   const history = useHistory();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     function getUser() {
       firebase.auth().onAuthStateChanged(async (user) => {
         if (user != null) {
           const userId = user.uid;
+          dispatch(
+            setActiveUser({
+              userName: user.displayName,
+              userEmail: user.email,
+              userId: user.uid,
+              isLoggedIn: true,
+            })
+          );
           if (userId != null) {
             try {
               const user = await getUserById(userId);
               if (user[0] !== undefined) {
+                dispatch(
+                  setUserFollowing({
+                    following: user[0].following,
+                  })
+                );
+                dispatch(
+                  setUserFullName({
+                    userFullName: user[0].fullName,
+                  })
+                );
+                dispatch(
+                  setActiveUserIcon({
+                    userIcon: user[0].userIcon,
+                  })
+                );
                 history.push("/main");
-                console.log(user[0]);
               }
             } catch (error) {
               console.error(error);
@@ -68,9 +98,31 @@ export default function SignIn() {
                 .signInWithEmailAndPassword(values.email, values.password)
                 .then(async (userCredential) => {
                   let user = userCredential.user;
+                  dispatch(
+                    setActiveUser({
+                      userName: user.displayName,
+                      userEmail: user.email,
+                      userId: user.uid,
+                      isLoggedIn: true,
+                    })
+                  );
                   const userFirestore = await getUserById(user.uid);
                   if (userFirestore != null) {
-                    console.log(userFirestore);
+                    dispatch(
+                      setUserFollowing({
+                        following: userFirestore[0].following,
+                      })
+                    );
+                    dispatch(
+                      setUserFullName({
+                        userFullName: user[0].fullName,
+                      })
+                    );
+                    dispatch(
+                      setActiveUserIcon({
+                        userIcon: user[0].userIcon,
+                      })
+                    );
                   }
                 });
               history.push("/main");
