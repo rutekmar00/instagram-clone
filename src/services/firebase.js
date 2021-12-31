@@ -1,5 +1,20 @@
 import { firebase, firestoreFieldValue } from "../lib/firebase";
 
+export async function getUserByUserName(userName) {
+  const output = await firebase
+    .firestore()
+    .collection("users")
+    .where("userName", "==", userName)
+    .get();
+
+  const user = output.docs.map((doc) => ({
+    ...doc.data(),
+    docId: doc.id,
+  }));
+
+  return user;
+}
+
 export async function getUserById(userId) {
   const output = await firebase
     .firestore()
@@ -192,4 +207,101 @@ export async function followUserByUserId(
     });
 
   return [...userToFollow, ...userLoggedIn];
+}
+
+export async function addPost(userName, linkToImage, addedAt, caption) {
+  const user = await getUserByUserName(userName);
+
+  let query = await firebase.firestore().collection("posts");
+  query = query.orderBy("added", "desc").limit(1);
+
+  const output = await query.get();
+
+  const getLastPostId = output.docs.map((post) => ({
+    postId: post.data().postId,
+  }));
+
+  firebase
+    .firestore()
+    .collection("posts")
+    .add({
+      added: addedAt,
+      comments: [],
+      likes: [],
+      numberOfComments: "0",
+      numberOfLikes: "0",
+      ownerIcon: user[0].userIcon,
+      ownerId: user[0].userId,
+      photoLink: linkToImage,
+      postId: (parseInt(getLastPostId[0].postId) + 1).toString(),
+      titleDescription: caption,
+      userNamePath: firebase.firestore().doc(`/users/${user[0].docId}`),
+    });
+
+  return "Success";
+}
+
+export async function getProfileInformation(userName) {
+  const outputUsers = await firebase
+    .firestore()
+    .collection("users")
+    .where("userName", "==", userName)
+    .get();
+
+  const user = outputUsers.docs.map((user) => {
+    let userData = user.data();
+    return {
+      followers: userData.followers.length,
+      following: userData.following.length,
+      userIcon: userData.userIcon,
+      userId: userData.userId,
+    };
+  });
+
+  const outputPosts = await firebase
+    .firestore()
+    .collection("posts")
+    .where("ownerId", "==", user[0].userId)
+    .get();
+
+  const posts = outputPosts.docs.map((post) => {
+    let postData = post.data();
+    return {
+      numberOfComments: postData.numberOfComments,
+      numberOfLikes: postData.numberOfLikes,
+      photoLink: postData.photoLink,
+      added: postData.added,
+    };
+  });
+
+  const merge = (...objects) => ({ ...objects });
+  return merge(user, posts);
+}
+
+export async function updateUserIcon(userId, fileUrl) {
+  const outputUser = await firebase
+    .firestore()
+    .collection("users")
+    .where("userId", "==", userId)
+    .get();
+
+  firebase
+    .firestore()
+    .collection("users")
+    .doc(outputUser.docs[0].id)
+    .update({ userIcon: fileUrl });
+}
+
+export async function updateUserCredentials(userId, userName, userFullName) {
+  const outputUser = await firebase
+    .firestore()
+    .collection("users")
+    .where("userId", "==", userId)
+    .get();
+
+  firebase
+    .firestore()
+    .collection("users")
+    .doc(outputUser.docs[0].id)
+    .update({ fullName: userFullName, userName: userName });
 }

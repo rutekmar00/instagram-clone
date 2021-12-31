@@ -1,6 +1,6 @@
 import "./styles.css";
 import React from "react";
-import { SignInPage, SignUpPage, MainPage } from "./pages";
+import { SignInPage, SignUpPage, MainPage, ProfilePage } from "./pages";
 import { Router, Switch, Route } from "react-router-dom";
 import { history } from "./helpers/history";
 import ProtectedRoute from "./helpers/protected-route";
@@ -22,6 +22,12 @@ function App() {
           exact
           path="/main"
           component={MainPage}
+          isLoggedIn={isLoggedIn}
+        />
+        <ProtectedRoute
+          exact
+          path="/profile/:name?"
+          component={ProfilePage}
           isLoggedIn={isLoggedIn}
         />
       </Switch>
