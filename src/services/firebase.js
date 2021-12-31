@@ -1,5 +1,4 @@
 import { firebase, firestoreFieldValue } from "../lib/firebase";
-//likeActionPost, postComment, getUserPosts
 
 export async function getUserById(userId) {
   const output = await firebase
@@ -141,4 +140,56 @@ export async function postComment(postDocId, comment, authorId) {
   }
 
   return commentId;
+}
+
+export async function getSuggestedProfiles(userId, following) {
+  console.log(userId);
+  console.log(following);
+
+  let query = firebase.firestore().collection("users");
+
+  if (following !== undefined && following !== null && following.length > 0) {
+    query = query.where("userId", "not-in", [...following, userId]);
+  } else {
+    query = query.where("userId", "!=", userId);
+  }
+
+  const output = await query.limit(5).get();
+
+  const suggestedProfiles = output.docs.map((profile) => ({
+    ...profile.data(),
+  }));
+
+  return suggestedProfiles;
+}
+
+export async function followUserByUserId(
+  userId,
+  userToFollowId,
+  typeOfOperation
+) {
+  const userLoggedIn = await getUserById(userId);
+  const userToFollow = await getUserById(userToFollowId);
+
+  firebase
+    .firestore()
+    .collection("users")
+    .doc(userLoggedIn[0].docId)
+    .update({
+      following: typeOfOperation
+        ? firestoreFieldValue.arrayRemove(userToFollow[0].userId)
+        : firestoreFieldValue.arrayUnion(userToFollow[0].userId),
+    });
+
+  firebase
+    .firestore()
+    .collection("users")
+    .doc(userToFollow[0].docId)
+    .update({
+      followers: typeOfOperation
+        ? firestoreFieldValue.arrayRemove(userLoggedIn[0].userId)
+        : firestoreFieldValue.arrayUnion(userLoggedIn[0].userId),
+    });
+
+  return [...userToFollow, ...userLoggedIn];
 }

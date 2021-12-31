@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/navbar";
 import Post from "../components/post";
+import AccountSuggestions from "../components/account-suggestions";
 import {
   MainContainer,
   MainContent,
   LeftSideSection,
   PostsContainer,
 } from "../containers/main";
-
 import { getUserPosts } from "../services/firebase";
 import { useSelector } from "react-redux";
 
@@ -50,6 +50,7 @@ export default function MainPage() {
               <p style={{ textAlign: "center" }}>Loading</p>
             )}
           </PostsContainer>
+          <AccountSuggestions></AccountSuggestions>
         </LeftSideSection>
       </MainContent>
     </MainContainer>
