@@ -166,8 +166,6 @@ function PostInformationComments(props) {
     let elementHeight;
     if (numberOfElements > 5) {
       elementHeight = 31 * 5;
-    } else {
-      elementHeight = 27 * numberOfElements;
     }
     holderStyle = {
       overflowX: "hidden",
@@ -177,7 +175,11 @@ function PostInformationComments(props) {
     };
     commentsToRender = commentsItems;
   } else {
-    buttonText = "View all " + commentsItems.length + " comments";
+    if (commentsItems.length === 0) {
+      buttonText = "No comments";
+    } else {
+      buttonText = "View all " + commentsItems.length + " comments";
+    }
     commentsToRender = commentsItems.slice(
       commentsItems.length - 2,
       commentsItems.length
@@ -187,7 +189,10 @@ function PostInformationComments(props) {
 
   return (
     <PostInformationCommentsHolder style={holderStyle}>
-      <PostInformationCommentsAllButton onClick={showOrHideComments}>
+      <PostInformationCommentsAllButton
+        onClick={showOrHideComments}
+        disabled={commentsItems.length === 0}
+      >
         {buttonText}
       </PostInformationCommentsAllButton>
       {commentsToRender.map((commentItem) => {

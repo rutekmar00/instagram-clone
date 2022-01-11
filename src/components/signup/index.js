@@ -1,7 +1,7 @@
 import React from "react";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   SignUpFormHolder,
   SubTitle,
@@ -39,7 +39,7 @@ const SignUpSchema = Yup.object().shape({
 });
 
 export default function SignUp() {
-  const history = useHistory();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -76,7 +76,7 @@ export default function SignUp() {
               resetForm();
               console.log(error);
             }
-            history.push("/");
+            navigate("/");
             setSubmitting(false);
             resetForm();
           }}

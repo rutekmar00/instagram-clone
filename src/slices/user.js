@@ -33,6 +33,9 @@ const userSlice = createSlice({
     setUserFullName: (state, action) => {
       state.userFullName = action.payload.userFullName;
     },
+    setUserName: (state, action) => {
+      state.userName = action.payload.userName;
+    },
   },
 });
 
@@ -41,6 +44,7 @@ export const {
   setActiveUserIcon,
   setUserLogOut,
   setUserFullName,
+  setUserName,
 } = userSlice.actions;
 
 export default userSlice.reducer;

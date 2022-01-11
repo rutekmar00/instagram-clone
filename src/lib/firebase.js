@@ -1,7 +1,7 @@
-import Firebase from "firebase/app";
-import "firebase/firestore";
-import "firebase/auth";
-import "firebase/storage";
+import Firebase from "firebase/compat/app";
+import "firebase/compat/firestore";
+import "firebase/compat/auth";
+import "firebase/compat/storage";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -15,6 +15,7 @@ const firebaseConfig = {
 
 const firebase = Firebase.initializeApp(firebaseConfig);
 const firestoreFieldValue = Firebase.firestore.FieldValue;
+
 const storage = Firebase.storage().ref();
 
 export { firebase, firestoreFieldValue, storage as imagesStorage };
