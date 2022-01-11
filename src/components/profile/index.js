@@ -32,8 +32,10 @@ import {
   AddPostCaptionHolder,
   AddPostCaption,
   AddPostCaptionLabel,
+  AddPostProgressBar,
   AddPostButton,
   EditProfileHolder,
+  EditProfileProgressBar,
   Title,
   FilePicker,
   FilePickerLabel,
@@ -54,30 +56,40 @@ import {
   updateUserIcon,
   updateUserCredentials,
 } from "../../services/firebase";
-import { setActiveUserIcon } from "../../slices/user";
+import {
+  setActiveUserIcon,
+  setUserName as setUserNameRedux,
+} from "../../slices/user";
 import { setUserFollowing } from "../../slices/userInformation";
 
 export default function Profile(props) {
   const [followers, setFollowers] = useState(null);
   const [numberOfPosts, setNumberOfPosts] = useState(0);
   const [information, setInformation] = useState(null);
+  const userIcon = useSelector((state) => state.user.userIcon);
 
   useEffect(() => {
     async function getInformation() {
-      const response = await getProfileInformation(props.profilePageUser);
+      let response;
+      if (props.isProfilePageOfLoggedInUser) {
+        response = await getProfileInformation(props.userEmail, "email");
+      } else {
+        response = await getProfileInformation(
+          props.profilePageUser,
+          "userName"
+        );
+      }
       response[1].sort(function (a, b) {
         return new Date(b.added) - new Date(a.added);
       });
       setInformation(response);
       setFollowers(response[0][0].followers);
-      setNumberOfPosts(response[1].length);
     }
-
     getInformation();
     return () => {
       setInformation(null);
     };
-  }, [props.profilePageUser]);
+  }, [numberOfPosts]);
 
   return (
     <>
@@ -86,7 +98,13 @@ export default function Profile(props) {
           <HeaderHolder>
             <HeaderImageHolder>
               <HeaderImageSpan>
-                <HeaderImage src={props.userIcon}></HeaderImage>
+                <HeaderImage
+                  src={
+                    props.isProfilePageOfLoggedInUser
+                      ? userIcon
+                      : information[0][0].userIcon
+                  }
+                ></HeaderImage>
               </HeaderImageSpan>
             </HeaderImageHolder>
             <HeaderInformationHolder>
@@ -106,7 +124,7 @@ export default function Profile(props) {
               <HeaderInformationFollowersHolder>
                 <HeaderInformationElement>
                   <HeaderInformationSpan>
-                    {numberOfPosts} posts
+                    {information[1].length} posts
                   </HeaderInformationSpan>
                 </HeaderInformationElement>
                 <HeaderInformationElement>
@@ -189,16 +207,23 @@ function HeaderFollowButton(props) {
 function Post(props) {
   const [isHovered, setIsHovered] = useState(false);
 
-  function handleMouseOver() {
+  function handleMouseOver(event) {
+    event.preventDefault();
     setIsHovered(true);
   }
 
-  function handleMouseOut() {
+  function handleMouseOut(event) {
+    event.preventDefault();
     setIsHovered(false);
   }
 
   return (
-    <PostHolder onMouseOver={handleMouseOver} onMouseOut={handleMouseOut}>
+    <PostHolder
+      onMouseOver={handleMouseOver}
+      onMouseOut={handleMouseOut}
+      onTouchStart={handleMouseOver}
+      onTouchEnd={handleMouseOut}
+    >
       <PostImageHolder>
         <PostImage src={props.postData.photoLink} />
       </PostImageHolder>
@@ -360,6 +385,7 @@ function AddPost(props) {
   const [showPreview, setShowPreview] = useState(false);
   const [imageName, setImageName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [progressValue, setProgressValue] = useState("0");
 
   function captionTextHandler(event) {
     setCaptionText(event.target.value);
@@ -374,7 +400,7 @@ function AddPost(props) {
       "state_changed",
       (snapshot) => {
         let progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log("Upload is " + progress + "% done");
+        setProgressValue(progress);
       },
       (error) => {
         console.error(error);
@@ -394,6 +420,7 @@ function AddPost(props) {
     document.getElementById("output").src = "";
     document.getElementById("filePicker").value = "";
     setCaptionText("");
+    setProgressValue("0");
     setImageUrl("");
     setShowPreview(false);
   }
@@ -419,6 +446,7 @@ function AddPost(props) {
           required
         ></AddPostCaption>
       </AddPostCaptionHolder>
+      <AddPostProgressBar max="100" value={progressValue} />
       <AddPostButton
         onClick={(e) => submitHandler(e)}
         disabled={!(captionText.length > 14 && imageUrl)}
@@ -438,6 +466,7 @@ function EditProfile(props) {
   const [showPreview, setShowPreview] = useState(false);
   const [imageName, setImageName] = useState("");
   const [imageUrl, setImageUrl] = useState(null);
+  const [progressValue, setProgressValue] = useState("0");
   const dispatch = useDispatch();
 
   async function handleSubmit(e) {
@@ -452,7 +481,7 @@ function EditProfile(props) {
         (snapshot) => {
           let progress =
             (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log("Upload is " + progress + "% done");
+          setProgressValue(progress);
         },
         (error) => {
           console.error(error);
@@ -468,15 +497,15 @@ function EditProfile(props) {
           });
         }
       );
-
       document.getElementById("output").src = "";
       document.getElementById("filePicker").value = "";
       setImageUrl(null);
+      setProgressValue("0");
       setShowPreview(false);
     }
     if (userNameStore !== userName || userFullNameStore !== fullName) {
       await updateUserCredentials(userId, userName, fullName);
-
+      dispatch(setUserNameRedux({ userName: userName }));
       await firebase.auth().currentUser.updateProfile({
         displayName: userName,
       });
@@ -494,6 +523,7 @@ function EditProfile(props) {
         width={150}
         height={100}
       />
+      <EditProfileProgressBar max="100" value={progressValue} />
       <FormHolder onSubmit={handleSubmit}>
         <InputHolder>
           <InputLabel>User name</InputLabel>

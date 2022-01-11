@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Image,
   Title,
@@ -35,7 +35,7 @@ const SignInSchema = Yup.object().shape({
 
 export default function SignIn() {
   const [error, setError] = useState("");
-  const history = useHistory();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export default function SignIn() {
                     userIcon: user[0].userIcon,
                   })
                 );
-                history.push("/main");
+                navigate("/main");
               }
             } catch (error) {
               console.error(error);
@@ -125,13 +125,13 @@ export default function SignIn() {
                     );
                   }
                 });
-              history.push("/main");
             } catch (error) {
               let errorMessage = error.message;
               setError(errorMessage);
               console.log(error.message);
               resetForm();
             }
+            navigate("/main");
           }}
         >
           {({

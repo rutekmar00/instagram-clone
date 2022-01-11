@@ -47,7 +47,10 @@ export async function getUserPosts(userId, following) {
         if (!users.hasOwnProperty(ref.id)) {
           users[ref.id] = ref.data().userName;
         }
-        newData = Object.assign(postData, { userName: ref.data().userName });
+        newData = Object.assign(postData, {
+          userName: ref.data().userName,
+          ownerIcon: ref.data().userIcon,
+        });
       } else {
         newData = postData;
       }
@@ -158,9 +161,6 @@ export async function postComment(postDocId, comment, authorId) {
 }
 
 export async function getSuggestedProfiles(userId, following) {
-  console.log(userId);
-  console.log(following);
-
   let query = firebase.firestore().collection("users");
 
   if (following !== undefined && following !== null && following.length > 0) {
@@ -241,11 +241,11 @@ export async function addPost(userName, linkToImage, addedAt, caption) {
   return "Success";
 }
 
-export async function getProfileInformation(userName) {
+export async function getProfileInformation(information, informationType) {
   const outputUsers = await firebase
     .firestore()
     .collection("users")
-    .where("userName", "==", userName)
+    .where(`${informationType}`, "==", information)
     .get();
 
   const user = outputUsers.docs.map((user) => {

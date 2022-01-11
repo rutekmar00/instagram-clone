@@ -7,7 +7,7 @@ import { useParams } from "react-router-dom";
 
 export default function ProfilePage() {
   const userName = useSelector((state) => state.user.userName);
-  const userIcon = useSelector((state) => state.user.userIcon);
+  const userEmail = useSelector((state) => state.user.userEmail);
   const profilePageUser = useParams().name || userName;
   const isProfilePageOfLoggedInUser =
     profilePageUser === userName ? true : false;
@@ -18,7 +18,7 @@ export default function ProfilePage() {
       <ProfileContainer>
         <Profile
           userName={userName}
-          userIcon={userIcon}
+          userEmail={userEmail}
           profilePageUser={profilePageUser}
           isProfilePageOfLoggedInUser={isProfilePageOfLoggedInUser}
         />

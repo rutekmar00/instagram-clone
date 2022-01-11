@@ -303,6 +303,10 @@ export const EditProfileHolder = styled.div`
 
 export const EditProfileChangeIcon = styled.div``;
 
+export const EditProfileProgressBar = styled.progress`
+  margin-top: 10px;
+`;
+
 export const AddPostHolder = styled.div`
   display: flex;
   flex-direction: column;
@@ -334,6 +338,10 @@ export const AddPostCaption = styled.textarea`
   &:invalid {
     border: 5px solid red;
   }
+`;
+
+export const AddPostProgressBar = styled.progress`
+  margin-top: 10px;
 `;
 
 export const AddPostButton = styled.button`
